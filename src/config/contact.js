@@ -42,8 +42,8 @@ export const contactConfig = {
     statusError: `Something went wrong. Email me directly at ${siteConfig.email}`,
   },
   emailjs: {
-    serviceId: "service_a7640hg",
-    templateId: "template_9wrfujs",
-    publicKey: "jST3K7mLMdrI1N3l_",
+  serviceId: import.meta.env.VITE_EMAILJS_SERVICE_ID,
+  templateId: import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+  publicKey: import.meta.env.VITE_EMAILJS_PUBLIC_KEY,
   },
 };
