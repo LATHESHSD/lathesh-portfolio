@@ -4,19 +4,26 @@ import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { navbarConfig } from "../config/navbar";
 import { siteConfig } from "../config/site";
+import { useAuth } from "../context/AuthContext";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { pathname } = useLocation();
   const { links } = navbarConfig;
-  const { logo, avatar, name } = siteConfig;
+  const { logo, avatar } = siteConfig;
+  const { user, isAdmin, signOut } = useAuth();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  const handleSignOut = async () => {
+    await signOut();
+    window.location.href = "/";
+  };
 
   return (
     <motion.nav
@@ -36,7 +43,6 @@ export default function Navbar() {
           className="group relative flex items-center gap-3"
           aria-label="Home"
         >
-          {/* Avatar with initial */}
           <motion.div
             whileHover={{ scale: 1.1, rotate: 5 }}
             transition={{ type: "spring", stiffness: 400, damping: 15 }}
@@ -48,7 +54,6 @@ export default function Navbar() {
             <span className="absolute bottom-0 right-0 w-3 h-3 bg-accent rounded-full border-2 border-bg" />
           </motion.div>
 
-          {/* Animated logo text */}
           <motion.div
             className="hidden sm:flex items-baseline text-xl font-serif tracking-tight"
             whileHover="hover"
@@ -88,7 +93,6 @@ export default function Navbar() {
             </motion.span>
           </motion.div>
 
-          {/* Animated underline */}
           <motion.div
             className="absolute -bottom-1 left-0 h-px bg-gradient-to-r from-primary via-purple to-accent hidden sm:block"
             initial={{ width: 0 }}
@@ -98,7 +102,7 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop nav links */}
-        <div className="hidden md:flex gap-1">
+        <div className="hidden md:flex gap-1 items-center">
           {links.map((link) => (
             <Link
               key={link.path}
@@ -123,6 +127,59 @@ export default function Navbar() {
               )}
             </Link>
           ))}
+
+          {/* Subscribe link — shown only when NOT logged in */}
+          {!user && (
+            <Link
+              to="/subscribe"
+              className="relative px-4 py-2 text-sm text-muted hover:text-white transition-colors"
+            >
+              Subscribe
+            </Link>
+          )}
+
+          {/* Admin / Dashboard / Sign out */}
+          {!user && (
+            <Link
+              to="/login"
+              className="ml-2 px-4 py-2 text-xs bg-white/5 hover:bg-white/10 border border-white/10 text-muted hover:text-white rounded-lg transition"
+            >
+              Admin
+            </Link>
+          )}
+
+          {user && isAdmin && (
+            <Link
+              to="/dashboard"
+              className="relative px-4 py-2 text-sm transition-colors group"
+            >
+              <span
+                className={
+                  pathname === "/dashboard"
+                    ? "text-accent"
+                    : "text-muted group-hover:text-accent"
+                }
+              >
+                Dashboard
+              </span>
+              {pathname === "/dashboard" && (
+                <motion.span
+                  layoutId="nav-pill"
+                  className="absolute inset-0 bg-accent/10 rounded-lg -z-10"
+                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                />
+              )}
+            </Link>
+          )}
+
+          {user && (
+            <button
+              onClick={handleSignOut}
+              className="ml-2 px-3 py-1.5 text-xs text-muted hover:text-red-400 border border-white/10 hover:border-red-400/40 rounded-lg transition"
+            >
+              Sign out
+            </button>
+          )}
         </div>
 
         {/* Mobile menu toggle */}
@@ -160,6 +217,52 @@ export default function Navbar() {
                   {link.name}
                 </Link>
               ))}
+
+              {!user && (
+                <Link
+                  to="/subscribe"
+                  onClick={() => setOpen(false)}
+                  className="px-3 py-2 rounded-lg transition text-muted hover:text-white hover:bg-white/5"
+                >
+                  Subscribe
+                </Link>
+              )}
+
+              {user && isAdmin && (
+                <Link
+                  to="/dashboard"
+                  onClick={() => setOpen(false)}
+                  className={`px-3 py-2 rounded-lg transition ${
+                    pathname === "/dashboard"
+                      ? "bg-accent/10 text-accent"
+                      : "text-muted hover:text-accent hover:bg-white/5"
+                  }`}
+                >
+                  Dashboard
+                </Link>
+              )}
+
+              {user && (
+                <button
+                  onClick={() => {
+                    setOpen(false);
+                    handleSignOut();
+                  }}
+                  className="text-left px-3 py-2 text-red-400 hover:bg-red-400/10 rounded-lg transition"
+                >
+                  Sign out
+                </button>
+              )}
+
+              {!user && (
+                <Link
+                  to="/login"
+                  onClick={() => setOpen(false)}
+                  className="px-3 py-2 text-center text-xs bg-white/5 border border-white/10 text-muted rounded-lg transition"
+                >
+                  Admin
+                </Link>
+              )}
             </div>
           </motion.div>
         )}
